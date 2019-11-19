@@ -27,12 +27,10 @@
                    [ValidateScript({Test-Path $_})]
         [string]$XmlFile='.\ADStructure.xml',
 
-    # Name of the domain. For instance  rabonet,  eu, am, ap or oc. If not given, the domain from the XML is used
+    # Name of the domain. For instance psdemo.com. If not given, the domain from the XML is used
     [Parameter(Mandatory=$False,Position=2)]
     [string]$DomainName
     )
-
-
 
 
 
@@ -98,8 +96,8 @@
             #
             # Add specific parameters in case of a new forest...
 
-            $ArgsDcPromo.Add("DomainName"       , $domXML.dnsname            ) # "RaboSvc.com"
-            $ArgsDcPromo.Add("DomainNetbiosName", $domXML.Name               ) # "RABOSVC"
+            $ArgsDcPromo.Add("DomainName"       , $domXML.dnsname            ) # "psdemo.com"
+            $ArgsDcPromo.Add("DomainNetbiosName", $domXML.Name               ) # "PSDEMO"
             $ArgsDcPromo.Add("DomainMode"       , $domXML.parameters.DFL     ) # 6   "Win2012R2"
             $ArgsDcPromo.Add("ForestMode"       , $forXML.forest.parameters.FFL ) # 6   "Win2012R2"
 
@@ -129,8 +127,8 @@
             $ArgsDcPromo.Add("SiteName"         , $SiteName )
 
             # Add specific parameters for the location of the domain in the forest.
-            #  IF  lastpart (rabonet.com) of the newDomainName (eu.rabonet.com)  is an existing domain.. Then this domain will be child of existing.
-            #     So:  remove FIRST name from the dnsdomainname (eu.)  and check if the remaining domain is existing.
+            #  IF  lastpart (psdemo.com) of the newDomainName (test.psdemo.com)  is an existing domain.. Then this domain will be child of existing.
+            #     So:  remove FIRST name from the dnsdomainname (test.psdemo.com -> test)  and check if the remaining domain is existing.
 
             [string[]]$arrDom=$domxml.dnsname.Split('.')
             if ($arrDom.Length -gt 2) {
@@ -143,14 +141,14 @@
 
                 if ( $forXML.forest.domains.domain | Where-Object { $_.dnsname -eq $parentDom } ) {
                     $ArgsDcPromo.Add("DomainType", "ChildDomain"                 )
-                    $ArgsDcPromo.Add("ParentDomainName", $ParentDom              ) # $parentDom = "rabosvc.com"   dnsname = "eu.rabosvc.com"
-                    $ArgsDcPromo.Add("NewDomainName", $domXML.name               ) # "RABOSVC"
-                    $ArgsDcPromo.Add("NewDomainNetbiosName", $domXML.Name        ) # "RABOSVC"
+                    $ArgsDcPromo.Add("ParentDomainName", $ParentDom              ) # $parentDom = "psdemo.com"   dnsname = "test.psdemo.com"
+                    $ArgsDcPromo.Add("NewDomainName", $domXML.name               ) # "psdemo"
+                    $ArgsDcPromo.Add("NewDomainNetbiosName", $domXML.Name        ) # "PSDEMO"
                 } else {
                     $ArgsDcPromo.Add("DomainType", "TreeDomain"                  )
-                    $ArgsDcPromo.Add("ParentDomainName", $ParentDom              ) # $parentDom = "rabosvc.com"   dnsname = "eu.rabosvc.com"
-                    $ArgsDcPromo.Add("NewDomainName", $domXML.dnsname            ) # "RaboSvc.com"
-                    $ArgsDcPromo.Add("NewDomainNetbiosName", $domXML.Name        ) # "RABOSVC"
+                    $ArgsDcPromo.Add("ParentDomainName", $ParentDom              ) # $parentDom = "psdemo.com"   dnsname = "test.psdemo.com"
+                    $ArgsDcPromo.Add("NewDomainName", $domXML.dnsname            ) # "psdemo.com"
+                    $ArgsDcPromo.Add("NewDomainNetbiosName", $domXML.Name        ) # "PSDEMO"
                 }
             }
 
@@ -185,9 +183,9 @@
             Write-Host "About to Promote DC in an existing forest, existing domain, specify Credentials to join the existing domain"
             $JoinCred = Get-Credential -UserName "$($domXML.dnsname)\Administrator" -Message "Specify Credentials to join the existing domain"
 
-            $ArgsDcPromo.Add("DomainName"       , $domXML.dnsname            ) # "RaboSvc.com"
-            $ArgsDcPromo.Add("Credential"       , $JoinCred              )
-            $ArgsDcPromo.Add("SiteName"         , $SiteName )
+            $ArgsDcPromo.Add("DomainName"       , $domXML.dnsname ) # "psdemo.com"
+            $ArgsDcPromo.Add("Credential"       , $JoinCred       )
+            $ArgsDcPromo.Add("SiteName"         , $SiteName       )
 
             # Optional Parameters..
             $ReplicationSourceDC = ($domxml.DCs.DC | Where-Object {$_.Name -eq $ComputerName } ).ReplicationSourceDC
@@ -205,6 +203,7 @@
 
         } else {
             # Computername not found in DCs! Error, or update the XML file
-            Write-Error "The current computername $ComputerName is NOT found in the DCs node in $XmlFile."        }
+            Write-Error "The current computername $ComputerName is NOT found in the DCs node in $XmlFile."
+        }
 
     }

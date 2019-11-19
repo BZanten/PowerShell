@@ -2,10 +2,10 @@
 .Synopsis
 .DESCRIPTION
 .EXAMPLE
-.\Configure-Sites.ps1 -XmlFile ADStructure_RaboSvc.com.xml -Verbose
+.\Configure-Sites.ps1 -XmlFile ADStructure.xml -Verbose
 .NOTES
    Author : Ben van Zanten
-   Company: Rabobank International
+   Company: Valid
    Date   : Dec 2015
    Version: 1.0
 
@@ -25,7 +25,7 @@
                    [ValidateScript({Test-Path $_})]
         [string]$XmlFile='.\ADStructure.xml',
 
-    # Name of the domain. For instance  rabonet,  eu, am, ap or oc. If not given, the domain from the XML is used
+    # Name of the domain. For instance psdemo.com. If not given, the domain from the XML is used
     [Parameter(Mandatory=$False,Position=2)]
     [string]$DomainName
     )
